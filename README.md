@@ -1,2 +1,3 @@
 # hello_world
-just about reporsitory
+HI,humans!
+  i'm a robort
