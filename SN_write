@@ -1,0 +1,59 @@
+        private void write_btn_Click(object sender, EventArgs e)
+        {
+            string recv_str;
+            comm.DiscardInBuffer();
+
+            Regex sn_reg = new Regex(@"^\S{16}$");
+            string write_cbsn_str = write_sn_textbox.Text.Trim();
+            if (write_cbsn_str != "" && sn_reg.IsMatch(write_cbsn_str))
+            {
+                string send_at_cbsn = "AT+EGMR=1,5,\"" + write_cbsn_str + "\"";
+                if (comm.IsOpen)
+                {
+                    comm.WriteLine(send_at_cbsn);
+                    try
+                    {
+                        recv_str = comm.ReadTo("\r\n");
+                        Console.WriteLine("yunzhi:" + recv_str);
+                        Thread.Sleep(200);
+                        int num = comm.BytesToRead;
+                        if (num > 0)
+                        {
+                            byte[] test = new byte[num];
+                            comm.Read(test, 0, num);
+                            Console.WriteLine("yunzhi:" + Encoding.ASCII.GetString(test));
+                            for (int i = 0; i < num; i++)
+                                Console.Write("{0:x} ", test[i]);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+
+                    string test_cbsn = read_m6620_cbsn();
+                    if (test_cbsn.Equals(write_cbsn_str))
+                    {
+                        rcv_richTextBox.Clear();
+                        sn_label.Text = "写入SN成功";
+                        sn_label.ForeColor = System.Drawing.Color.Green;
+                        if (id_auto_plus_chkbox.Checked)
+                        {
+                            write_sn_textbox.Text = write_cbsn_str.Substring(0, 12) + (Convert.ToUInt16(write_cbsn_str.Substring(12, 4)) + 1).ToString().PadLeft(4,'0');
+                        }
+                    }
+                    else
+                    {
+                        sn_label.Text = "写入SN失败";
+                        sn_label.ForeColor = System.Drawing.Color.Red;
+                    }
+                }
+
+            }
+            else
+            {
+                MessageBox.Show("错误的SN号（位数不是16位或者SN号不符合规定＿);
+                sn_label.Text = "写入SN失败";
+                sn_label.ForeColor = System.Drawing.Color.Red;
+            }
+            
