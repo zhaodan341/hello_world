@@ -1,0 +1,45 @@
+Regex reg = new Regex(@"^\d{15}$");
+            string write_iemi_str = write_imei_textbox.Text.Trim();
+
+            if (write_iemi_str != "" && reg.IsMatch(write_iemi_str))
+            {
+                string send_at_imei = "AT+EGMR=1,7,\"" + write_iemi_str + "\"";
+                if (comm.IsOpen)
+                {
+                    comm.WriteLine(send_at_imei);
+
+                    try
+                    {
+                        recv_str = comm.ReadTo("OK\r\n");
+                        Console.WriteLine("yunzhi:" + recv_str);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                        recv_str = "";
+                    }
+
+                    string test_imei = read_m6620_imei();
+                    if (test_imei.Equals(write_iemi_str))
+                    {
+                        imei_label.Text = "写入IMEI成功";
+                        imei_label.ForeColor = System.Drawing.Color.Green;
+                        if (id_auto_plus_chkbox.Checked)
+                        {
+                            write_imei_textbox.Text = (Convert.ToUInt64(write_iemi_str) + 1).ToString().PadLeft(15, '0');
+                        }
+                    }
+                    else
+                    {
+                        imei_label.Text = "写入IMEI失败";
+                        imei_label.ForeColor = System.Drawing.Color.Red;
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("错误的IMEI号（位数不是15位或者IMEI号不符合规定）");
+                imei_label.Text = "写入IMEI失败";
+                imei_label.ForeColor = System.Drawing.Color.Red;
+            }
+         
